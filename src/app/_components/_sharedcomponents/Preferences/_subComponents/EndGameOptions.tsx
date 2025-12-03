@@ -22,7 +22,7 @@ interface IProps {
 
 function EndGameOptions({ handleOpenBugReport, gameMode }: IProps) {
     const router = useRouter();
-    const { sendLobbyMessage, sendMessage, resetStates, lobbyState, connectedPlayer, isSpectator, statsSubmitNotification } = useGame();
+    const { sendLobbyMessage, sendMessage, resetStates, lobbyState, connectedPlayer, isSpectator, statsSubmitNotification, gameState } = useGame();
     const [karabastStatsMessage, setKarabastStatsMessage] = useState<{ type: string; message: string } | null>(null);
     const [swuStatsMessage, setSwuStatsMessage] = useState<{ type: string; message: string } | null>(null);
 
@@ -258,6 +258,38 @@ function EndGameOptions({ handleOpenBugReport, gameMode }: IProps) {
                 </Box>
             </Box>
 
+            {/* Bo3 Score Section */}
+            {isBo3Mode && (
+                <Box sx={styles.functionContainer}>
+                    <Typography sx={styles.typographyContainer} variant={'h3'}>Best-of-Three Score</Typography>
+                    <Divider sx={{ mb: '20px' }} />
+                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                        {Object.entries(winsPerPlayer).map(([playerId, wins]) => {
+                            const playerName = gameState?.players?.[playerId]?.user?.username || playerId;
+                            const isCurrentPlayer = playerId === connectedPlayer;
+                            return (
+                                <Typography
+                                    key={playerId}
+                                    sx={{
+                                        ...styles.typeographyStyle,
+                                        color: isCurrentPlayer ? '#4caf50' : '#878787',
+                                        fontWeight: isCurrentPlayer ? 'bold' : 'normal',
+                                    }}
+                                >
+                                    {playerName}: {wins} {wins === 1 ? 'win' : 'wins'}
+                                    {isCurrentPlayer && ' (You)'}
+                                </Typography>
+                            );
+                        })}
+                        {isBo3SetComplete && (
+                            <Typography sx={{ ...styles.typeographyStyle, color: '#ff9800', mt: '10px' }}>
+                                Set complete! {Object.entries(winsPerPlayer).find(([, wins]) => wins >= 2)?.[0] === connectedPlayer ? 'You won the set!' : 'Your opponent won the set.'}
+                            </Typography>
+                        )}
+                    </Box>
+                </Box>
+            )}
+
             {isMaintenanceMode ? (
                 <Box sx={styles.functionContainer}>
                     <Typography sx={styles.typographyContainer} variant={'h3'}>Maintenance</Typography>
@@ -270,7 +302,7 @@ function EndGameOptions({ handleOpenBugReport, gameMode }: IProps) {
                 !isSpectator && (
                     <Box sx={styles.functionContainer}>
                         <Typography sx={styles.typographyContainer} variant={'h3'}>
-                            {isBo3Mode ? 'Best of 3' : (isQuickMatch ? 'Actions' : 'Rematch')}
+                            {isBo3Mode ? 'Best of Three' : (isQuickMatch ? 'Actions' : 'Rematch')}
                         </Typography>
                         <Divider sx={{ mb: '20px' }} />
 
